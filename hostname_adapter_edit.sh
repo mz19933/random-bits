@@ -5,11 +5,15 @@
 
 # Host name edit, receives input from user
 
-echo Enter new host name:
+echo "Enter new host name:"
 read newhostname
-echo $newhostname
-$newhostname > /etc/hostname
 
+# Display the entered host name
+echo "New host name: $newhostname"
+# Write the new host name to /etc/hostname
+echo "$newhostname" | sudo tee /etc/hostname >/dev/null
+# Apply the new host name
+sudo hostnamectl set-hostname "$newhostname"
 
 echo "Enter the last octet IP for host-only network:"
 read newip
