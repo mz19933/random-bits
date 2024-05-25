@@ -143,8 +143,14 @@ KUBECONFIG=$HOME/.kube/config
 # Example -
 sudo kubeadm join controller1:6443 --token 0mcvy7.tgergzpgtrs7r11l --discovery-token-ca-cert-hash sha256:453b6c15b97fc78ebf795a3f48b7d673f2369d41b94847d061291586a5cf75a5
 
-# Make and added node a control plane
+# Label a node as a control plane
 kubectl label nodes controller2 node-role.kubernetes.io/control-plane=control-plane
+
+# Taint a node as control plane
+kubectl taint nodes controller2 node-role.kubernetes.io/control-plane=:NoSchedule
+
+# Label a node a worker
+kubectl label nodes worker1 node-role.kubernetes.io/worker=worker
 
 # To make sure kubectl works on all controllers copy or recrate the .kube config on the target controller
 scp ubadmin@controller1:~/.kube/config ~/.kube/config
