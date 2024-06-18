@@ -2,9 +2,8 @@
 
 ## 1. Create a base azure virtual image
 
-### Default spec - Windows Server 2019 DataCenter
+Default spec - Windows Server 2019 DataCenter
 
----
 
 ## 2. Generalize a VM
 
@@ -18,11 +17,8 @@ Use the Sysprep.exe tool to generalize a Windows VM. Follow these steps:
 
 After the VM has been shut down, you should deallocate it while it's in this clean state. You can do this via the Azure portal, via Azure PowerShell, or Azure Command-Line Interface (Azure CLI). In the Azure portal, select the appropriate VM, and then on the toolbar, select Stop. At the Stop this virtual machine prompt, select OK.
 
----
-
 ## 3. Stop and deallocate the VM (deallocating, stops the machine)
 
-```bash
 az vm deallocate \
     --resource-group <resource group> \
     --name <virtual machine name>
