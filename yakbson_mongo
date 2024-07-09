@@ -1,0 +1,68 @@
+docker-compose.yml
+
+version: '3.8'
+
+services:
+  shard1:
+    image: mongo:latest
+    command: mongod --shardsvr --replSet shard1 --port 27018
+    volumes:
+      - ./shard1_data:/data/db
+    entrypoint: ["/bin/bash", "-c", "docker-entrypoint.sh mongod --shardsvr --replSet shard1 --port 27018"]
+    networks:
+      - mongo-cluster
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  shard2:
+    image: mongo:latest
+    command: mongod --shardsvr --replSet shard2 --port 27019
+    volumes:
+      - ./shard2_data:/data/db
+    entrypoint: ["/bin/bash", "-c", "docker-entrypoint.sh mongod --shardsvr --replSet shard2 --port 27019"]
+    networks:
+      - mongo-cluster
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  mongo-cluster:
+    driver: bridge
+
+###################################################################################
+
+docker-entrypoint.sh
+
+#!/bin/bash
+set -e
+
+# Start MongoDB with provided arguments
+mongod "$@" &
+
+# Wait for MongoDB to start
+until mongo --eval "db.adminCommand('ping')"; do
+    echo "Waiting for MongoDB to start..."
+    sleep 5
+done
+
+# Initialize replica sets if not already initialized
+if [ "$1" == "mongod" ]; then
+    if [ "$2" == "--shardsvr" ] && [ "$3" == "--replSet" ]; then
+        rs_name="$4"
+        port="$6"
+        if [ "$rs_name" == "shard1" ]; then
+            mongo --port "$port" --eval "rs.initiate({_id: 'shard1', members: [{_id: 0, host: 'localhost:$port'}]})"
+        elif [ "$rs_name" == "shard2" ]; then
+            mongo --port "$port" --eval "rs.initiate({_id: 'shard2', members: [{_id: 0, host: 'localhost:$port'}]})"
+        fi
+    fi
+fi
+
+# Keep the container running
+fg %1
